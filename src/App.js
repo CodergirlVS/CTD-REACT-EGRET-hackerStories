@@ -4,6 +4,7 @@ import { getByTitle } from "@testing-library/react";
 import List from "./List.js";
 import React from "react";
 import Search from "./Search.js";
+import InputWithLabel from "./InputWithLabel";
 
 const welcome = {
   greetings: "Hi",
@@ -35,19 +36,19 @@ const stories = [
   },
 ];
 
+const useSemiPersistentState = (key, initialState) => {
+  const [value, setValue] = React.useState(
+    localStorage.getItem(key) || initialState
+  );
+  React.useEffect(() => {
+    localStorage.setItem(key, value);
+  }, [value, key]);
+
+  return [value, setValue];
+};
+
 function App() {
-  const useSemiPersistentState = (initialState) => {
-    const [searchTerm, setSearchTerm] = React.useState(
-      localStorage.getItem("search") || initialState
-    );
-    React.useEffect(() => {
-      localStorage.setItem("search", searchTerm);
-    }, [searchTerm]);
-
-    return searchTerm, setSearchTerm;
-  };
-
-  const [searchTerm, setSearchTerm] = useSemiPersistentState("React");
+  const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "R");
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -65,6 +66,12 @@ function App() {
       </span>
       <hr />
       <h2>Good{getTitle(" Morning")}</h2>
+      <InputWithLabel
+        id="search"
+        label="Search"
+        value={searchTerm}
+        onInputChange={handleSearch}
+      />
 
       <Search search={searchTerm} onSearch={handleSearch} />
       <p>
