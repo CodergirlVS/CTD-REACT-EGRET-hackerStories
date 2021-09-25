@@ -36,10 +36,21 @@ const stories = [
 ];
 
 function App() {
-  const [searchTerm, setSearchTerm] = React.useState("");
+  const useSemiPersistentState = (initialState) => {
+    const [searchTerm, setSearchTerm] = React.useState(
+      localStorage.getItem("search") || initialState
+    );
+    React.useEffect(() => {
+      localStorage.setItem("search", searchTerm);
+    }, [searchTerm]);
+
+    return searchTerm, setSearchTerm;
+  };
+
+  const [searchTerm, setSearchTerm] = useSemiPersistentState("React");
+
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-    console.log(event);
   };
 
   const searchStories = stories.filter((story) => {
