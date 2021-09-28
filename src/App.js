@@ -1,6 +1,6 @@
-import logo from "./logo.svg";
+//import logo from "./logo.svg";
 import "./App.css";
-import { getByTitle } from "@testing-library/react";
+//import { getByTitle } from "@testing-library/react";
 import List from "./List.js";
 import React from "react";
 import Search from "./Search.js";
@@ -68,10 +68,12 @@ function App() {
       <h2>Good{getTitle(" Morning")}</h2>
       <InputWithLabel
         id="search"
-        label="Search"
         value={searchTerm}
         onInputChange={handleSearch}
-      />
+        isFocused
+      >
+        <strong>Find It:</strong>
+      </InputWithLabel>
 
       <Search search={searchTerm} onSearch={handleSearch} />
       <p>
