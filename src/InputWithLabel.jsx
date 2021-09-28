@@ -1,15 +1,26 @@
 import React from "react";
-const InputWithLabel = ({ id, label, value, type="text", onInputChange, }) => (
-<>
-<label htmlFor={id}>{label}</label>
-&nbsp;
-    <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={onInputChange}
-    />
-</>
-);
+const InputWithLabel = ({ id, value, type = "text", onInputChange, isFocused, children }) => {
+        const inputRef = React.useRef(); 
+        React.useEffect(() => {
+        if (isFocused && inputRef.current) {
+        inputRef.current.focus();
+        }
+        });
+
+        return (
+        <>
+                <label htmlFor={id}>{children}</label>
+                &nbsp;
+                <input
+                        id={id}
+                        type={type}
+                        ref={inputRef}
+                        value={value}
+                        onChange={onInputChange}
+                        autoFocus={isFocused}
+                />
+        </>
+        )
+};
 
 export default InputWithLabel;
