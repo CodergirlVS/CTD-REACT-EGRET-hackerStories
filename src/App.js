@@ -66,6 +66,9 @@ function App() {
       </span>
       <hr />
       <h2>Good{getTitle(" Morning")}</h2>
+
+      <Search search={searchTerm} onSearch={handleSearch} />
+
       <InputWithLabel
         id="search"
         value={searchTerm}
@@ -74,8 +77,6 @@ function App() {
       >
         <strong>Find It:</strong>
       </InputWithLabel>
-
-      <Search search={searchTerm} onSearch={handleSearch} />
       <p>
         Searching for <strong>{searchTerm}</strong>.
       </p>
