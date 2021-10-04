@@ -53,15 +53,21 @@ const getAsyncStories = () =>
   );
 
 function App() {
-  const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "R");
-
+  const [isLoading, setIsLoading] = React.useState(false);
   const [stories, setStories] = React.useState([]);
+  const [isError, setIsError] = React.useState(false);
 
   React.useEffect(() => {
+    setIsLoading(true);
+
     getAsyncStories().then((result) => {
       setStories(result.data.stories);
+      setIsLoading(false);
     });
+    //  .catch(() => setIsError(true));
   }, []);
+
+  const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "R");
 
   const handleRemoveStory = (objectID) => {
     const newStories = stories.filter((story) => story.objectID !== objectID);
@@ -84,9 +90,11 @@ function App() {
       </span>
       <hr />
       <h2>Good{getTitle(" Morning")}</h2>
+      {isError && <p>Something went wrong ...</p>}
+      {isLoading && <p>Loading ...</p>}
+      {/* // : ( // ... // )} */}
 
       <Search search={searchTerm} onSearch={handleSearch} />
-
       <InputWithLabel
         id="search"
         value={searchTerm}
@@ -98,9 +106,7 @@ function App() {
       <p>
         Searching for <strong>{searchTerm}</strong>.
       </p>
-
       <List list={searchStories} onRemoveStory={handleRemoveStory} />
-
       <hr />
       <ul>
         {numbers.map(function (number) {
