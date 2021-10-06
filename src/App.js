@@ -48,38 +48,60 @@ const useSemiPersistentState = (key, initialState) => {
 };
 
 const getAsyncStories = () =>
-  new Promise((resolve) =>
-    setTimeout(() => resolve({ data: { stories: initialStories } }), 2000)
+  new Promise((resolve, reject) =>
+    setTimeout(resolve({ data: { stories: initialStories } }), 2000)
   );
 
 const storiesReducer = (state, action) => {
   switch (action.type) {
-    case "SET_STORIES":
-      return action.payload;
+    case "STORIES_FETCH_INIT":
+      return {
+        ...state,
+        isLoading: true,
+        isError: false,
+      };
+    case "STORIES_FETCH_SUCCESS":
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+      };
+    case "STORIES_FETCH_FAILURE":
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
     case "REMOVE_STORY":
-      return state.filter((story) => action.payload !== story.objectID);
+      return {
+        ...state,
+        data: state.date.filter((story) => action.payload !== story.objectID),
+      };
     default:
       throw new Error();
   }
 };
 
 function App() {
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [stories, dispatchStories] = React.useReducer(storiesReducer, []);
-  const [isError, setIsError] = React.useState(false);
+  const [stories, dispatchStories] = React.useReducer(storiesReducer, {
+    data: [],
+    isLoading: false,
+    isError: false,
+  });
 
   React.useEffect(() => {
-    setIsLoading(true);
+    dispatchStories({
+      type: "STORIES_FETCH_INIT",
+    });
 
     getAsyncStories()
       .then((result) => {
         dispatchStories({
-          type: "SET_STORIES",
+          type: "STORIES_FETCH_SUCCESS",
           payload: result.data.stories,
         });
-        setIsLoading(false);
       })
-      .catch(() => setIsError(true));
+      .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }));
   }, []);
 
   const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "R");
@@ -96,7 +118,7 @@ function App() {
     setSearchTerm(event.target.value);
   };
 
-  const searchStories = stories.filter((story) => {
+  const searchStories = stories.data.filter((story) => {
     return story.title.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
@@ -108,8 +130,12 @@ function App() {
       </span>
       <hr />
       <h2>Good{getTitle(" Morning")}</h2>
-      {isError && <p>Something went wrong ...</p>}
-      {isLoading && <p>Loading ...</p>}
+      {stories.isError && <p>Something went wrong ...</p>}
+      {stories.isLoading ? (
+        <p>Loading ...</p>
+      ) : (
+        <List list={searchStories} onRemoveStory={handleRemoveStory} />
+      )}
 
       <Search search={searchTerm} onSearch={handleSearch} />
       <InputWithLabel
@@ -123,7 +149,7 @@ function App() {
       <p>
         Searching for <strong>{searchTerm}</strong>.
       </p>
-      <List list={searchStories} onRemoveStory={handleRemoveStory} />
+
       <hr />
       <ul>
         {numbers.map(function (number) {
