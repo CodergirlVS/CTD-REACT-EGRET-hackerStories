@@ -52,26 +52,44 @@ const getAsyncStories = () =>
     setTimeout(() => resolve({ data: { stories: initialStories } }), 2000)
   );
 
+const storiesReducer = (state, action) => {
+  switch (action.type) {
+    case "SET_STORIES":
+      return action.payload;
+    case "REMOVE_STORY":
+      return state.filter((story) => action.payload !== story.objectID);
+    default:
+      throw new Error();
+  }
+};
+
 function App() {
   const [isLoading, setIsLoading] = React.useState(false);
-  const [stories, setStories] = React.useState([]);
+  const [stories, dispatchStories] = React.useReducer(storiesReducer, []);
   const [isError, setIsError] = React.useState(false);
 
   React.useEffect(() => {
     setIsLoading(true);
 
-    getAsyncStories().then((result) => {
-      setStories(result.data.stories);
-      setIsLoading(false);
-    });
-    //  .catch(() => setIsError(true));
+    getAsyncStories()
+      .then((result) => {
+        dispatchStories({
+          type: "SET_STORIES",
+          payload: result.data.stories,
+        });
+        setIsLoading(false);
+      })
+      .catch(() => setIsError(true));
   }, []);
 
   const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "R");
 
   const handleRemoveStory = (objectID) => {
-    const newStories = stories.filter((story) => story.objectID !== objectID);
-    setStories(newStories);
+    dispatchStories({
+      type: "REMOVE_STORY",
+      payload: objectID,
+    });
+    console.log("Remove");
   };
 
   const handleSearch = (event) => {
@@ -92,7 +110,6 @@ function App() {
       <h2>Good{getTitle(" Morning")}</h2>
       {isError && <p>Something went wrong ...</p>}
       {isLoading && <p>Loading ...</p>}
-      {/* // : ( // ... // )} */}
 
       <Search search={searchTerm} onSearch={handleSearch} />
       <InputWithLabel
