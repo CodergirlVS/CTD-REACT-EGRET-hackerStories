@@ -4,7 +4,9 @@ const List = ({ list, onRemoveStory }) => {
   return (
     <ul>
       {list.map(function (item) {
-        return <Item {...item} onRemoveStory={onRemoveStory} />;
+        return (
+          <Item key={item.objectID} {...item} onRemoveStory={onRemoveStory} />
+        );
       })}
     </ul>
   );

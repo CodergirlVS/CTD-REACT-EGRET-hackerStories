@@ -48,9 +48,10 @@ const useSemiPersistentState = (key, initialState) => {
 };
 
 const getAsyncStories = () =>
-  new Promise((resolve, reject) =>
-    setTimeout(resolve({ data: { stories: initialStories } }), 2000)
-  );
+  new Promise((resolve, reject) => {
+    setTimeout(() => resolve({ data: { stories: initialStories } }), 5000);
+    console.log(resolve);
+  });
 
 const storiesReducer = (state, action) => {
   switch (action.type) {
@@ -63,6 +64,7 @@ const storiesReducer = (state, action) => {
     case "STORIES_FETCH_SUCCESS":
       return {
         ...state,
+        data: action.payload,
         isLoading: false,
         isError: false,
       };
@@ -122,6 +124,7 @@ function App() {
     return story.title.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
+  console.log(stories.isLoading);
   return (
     <div className="App">
       <h1>My Hacker Stories</h1>
@@ -131,13 +134,8 @@ function App() {
       <hr />
       <h2>Good{getTitle(" Morning")}</h2>
       {stories.isError && <p>Something went wrong ...</p>}
-      {stories.isLoading ? (
-        <p>Loading ...</p>
-      ) : (
-        <List list={searchStories} onRemoveStory={handleRemoveStory} />
-      )}
-
       <Search search={searchTerm} onSearch={handleSearch} />
+
       <InputWithLabel
         id="search"
         value={searchTerm}
@@ -146,6 +144,13 @@ function App() {
       >
         <strong>Find It:</strong>
       </InputWithLabel>
+
+      {stories.isLoading ? (
+        <p>Loading ...</p>
+      ) : (
+        <List list={searchStories} onRemoveStory={handleRemoveStory} />
+      )}
+
       <p>
         Searching for <strong>{searchTerm}</strong>.
       </p>
