@@ -3,7 +3,7 @@ import "./App.css";
 //import { getByTitle } from "@testing-library/react";
 import List from "./List.js";
 import React from "react";
-import Search from "./Search.js";
+//import Search from "./Search.js";
 import InputWithLabel from "./InputWithLabel";
 
 const welcome = {
@@ -16,25 +16,6 @@ function getTitle(title) {
 }
 
 const numbers = [1, 2, 3, 4];
-
-// const initialStories = [
-//   {
-//     title: "React",
-//     url: "https://reactjs.org/",
-//     author: "Jordan Walke",
-//     num_comments: 3,
-//     points: 4,
-//     objectID: 0,
-//   },
-//   {
-//     title: "Redux",
-//     url: "https://redux.js.org/",
-//     author: "Dan Abramov, Andrew Clark",
-//     num_comments: 2,
-//     points: 5,
-//     objectID: 1,
-//   },
-// ];
 
 const useSemiPersistentState = (key, initialState) => {
   const [value, setValue] = React.useState(
@@ -81,22 +62,29 @@ const storiesReducer = (state, action) => {
 };
 
 function App() {
-  const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "");
+  const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "Re");
 
   const [stories, dispatchStories] = React.useReducer(storiesReducer, {
     data: [],
     isLoading: false,
     isError: false,
   });
+  const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
+
+  const handleSearchInput = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleSearchSubmit = () => {
+    setUrl(`${API_ENDPOINT}${searchTerm}`);
+  };
 
   const handleFetchStories = React.useCallback(() => {
-    if (!searchTerm) return;
-
     dispatchStories({
       type: "STORIES_FETCH_INIT",
     });
 
-    fetch(`${API_ENDPOINT}${searchTerm}`)
+    fetch(url)
       .then((response) => response.json())
       .then((result) => {
         dispatchStories({
@@ -105,7 +93,7 @@ function App() {
         });
       })
       .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }));
-  }, [searchTerm]);
+  }, [url]);
 
   React.useEffect(() => {
     handleFetchStories();
@@ -119,10 +107,6 @@ function App() {
     console.log("Remove");
   };
 
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
   return (
     <div className="App">
       <h1>My Hacker Stories</h1>
@@ -132,16 +116,21 @@ function App() {
       <hr />
       <h2>Good{getTitle(" Morning")}</h2>
       {stories.isError && <p>Something went wrong ...</p>}
-      <Search search={searchTerm} onSearch={handleSearch} />
+
+      {/* <Search search={searchTerm} onSearch={handleSearchInput} /> */}
 
       <InputWithLabel
         id="search"
         value={searchTerm}
-        onInputChange={handleSearch}
+        onInputChange={handleSearchInput}
         isFocused
       >
         <strong>Find It:</strong>
       </InputWithLabel>
+
+      <button type="button" disabled={!searchTerm} onClick={handleSearchSubmit}>
+        Submit
+      </button>
 
       {stories.isLoading ? (
         <p>Loading ...</p>
