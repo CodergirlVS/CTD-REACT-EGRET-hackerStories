@@ -5,6 +5,7 @@ import List from "./List.js";
 import React from "react";
 //import Search from "./Search.js";
 import InputWithLabel from "./InputWithLabel";
+import axios from "axios";
 
 const welcome = {
   greetings: "Hi",
@@ -75,24 +76,26 @@ function App() {
     setSearchTerm(event.target.value);
   };
 
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = (event) => {
     setUrl(`${API_ENDPOINT}${searchTerm}`);
+    event.preventDefault();
   };
 
-  const handleFetchStories = React.useCallback(() => {
+  const handleFetchStories = React.useCallback(async () => {
     dispatchStories({
       type: "STORIES_FETCH_INIT",
     });
 
-    fetch(url)
-      .then((response) => response.json())
-      .then((result) => {
-        dispatchStories({
-          type: "STORIES_FETCH_SUCCESS",
-          payload: result.hits,
-        });
-      })
-      .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }));
+    try {
+      const result = await axios.get(url);
+
+      dispatchStories({
+        type: "STORIES_FETCH_SUCCESS",
+        payload: result.data.hits,
+      });
+    } catch {
+      dispatchStories({ type: "STORIES_FETCH_FAILURE" });
+    }
   }, [url]);
 
   React.useEffect(() => {
@@ -104,8 +107,24 @@ function App() {
       type: "REMOVE_STORY",
       payload: objectID,
     });
-    console.log("Remove");
   };
+
+  const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
+    <form onSubmit={onSearchSubmit}>
+      <InputWithLabel
+        id="search"
+        value={searchTerm}
+        onInputChange={onSearchInput}
+        isFocused
+      >
+        <strong>Find It:</strong>
+      </InputWithLabel>
+
+      <button type="submit" disabled={!searchTerm}>
+        Submit
+      </button>
+    </form>
+  );
 
   return (
     <div className="App">
@@ -114,34 +133,29 @@ function App() {
         {welcome.greetings} {welcome.title}
       </span>
       <hr />
+
       <h2>Good{getTitle(" Morning")}</h2>
-      {stories.isError && <p>Something went wrong ...</p>}
 
       {/* <Search search={searchTerm} onSearch={handleSearchInput} /> */}
 
-      <InputWithLabel
-        id="search"
-        value={searchTerm}
-        onInputChange={handleSearchInput}
-        isFocused
-      >
-        <strong>Find It:</strong>
-      </InputWithLabel>
+      <SearchForm
+        searchTerm={searchTerm}
+        onSearchInput={handleSearchInput}
+        onSearchSubmit={handleSearchSubmit}
+      />
 
-      <button type="button" disabled={!searchTerm} onClick={handleSearchSubmit}>
-        Submit
-      </button>
+      <hr />
+
+      {stories.isError && <p>Something went wrong ...</p>}
 
       {stories.isLoading ? (
         <p>Loading ...</p>
       ) : (
         <List list={stories.data} onRemoveStory={handleRemoveStory} />
       )}
-
       <p>
         Searching for <strong>{searchTerm}</strong>.
       </p>
-
       <hr />
       <ul>
         {numbers.map(function (number) {
