@@ -109,6 +109,23 @@ function App() {
     });
   };
 
+  const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
+    <form onSubmit={onSearchSubmit}>
+      <InputWithLabel
+        id="search"
+        value={searchTerm}
+        onInputChange={onSearchInput}
+        isFocused
+      >
+        <strong>Find It:</strong>
+      </InputWithLabel>
+
+      <button type="submit" disabled={!searchTerm}>
+        Submit
+      </button>
+    </form>
+  );
+
   return (
     <div className="App">
       <h1>My Hacker Stories</h1>
@@ -116,37 +133,29 @@ function App() {
         {welcome.greetings} {welcome.title}
       </span>
       <hr />
-      <h2>Good{getTitle(" Morning")}</h2>
 
-      {stories.isError && <p>Something went wrong ...</p>}
+      <h2>Good{getTitle(" Morning")}</h2>
 
       {/* <Search search={searchTerm} onSearch={handleSearchInput} /> */}
 
-      <form onSubmit={handleSearchSubmit}>
-        <InputWithLabel
-          id="search"
-          value={searchTerm}
-          onInputChange={handleSearchInput}
-          isFocused
-        >
-          <strong>Find It:</strong>
-        </InputWithLabel>
+      <SearchForm
+        searchTerm={searchTerm}
+        onSearchInput={handleSearchInput}
+        onSearchSubmit={handleSearchSubmit}
+      />
 
-        <button type="submit" disabled={!searchTerm}>
-          Submit
-        </button>
-      </form>
+      <hr />
+
+      {stories.isError && <p>Something went wrong ...</p>}
 
       {stories.isLoading ? (
         <p>Loading ...</p>
       ) : (
         <List list={stories.data} onRemoveStory={handleRemoveStory} />
       )}
-
       <p>
         Searching for <strong>{searchTerm}</strong>.
       </p>
-
       <hr />
       <ul>
         {numbers.map(function (number) {
