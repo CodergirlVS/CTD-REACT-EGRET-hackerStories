@@ -110,7 +110,7 @@ function App() {
   };
 
   const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
-    <form onSubmit={onSearchSubmit}>
+    <form onSubmit={onSearchSubmit} className="search-form">
       <InputWithLabel
         id="search"
         value={searchTerm}
@@ -120,15 +120,19 @@ function App() {
         <strong>Find It:</strong>
       </InputWithLabel>
 
-      <button type="submit" disabled={!searchTerm}>
+      <button
+        type="submit"
+        disabled={!searchTerm}
+        className="button buttonLarge"
+      >
         Submit
       </button>
     </form>
   );
 
   return (
-    <div className="App">
-      <h1>My Hacker Stories</h1>
+    <div className="container">
+      <h1 className="headline-primary">My Hacker Stories</h1>
       <span>
         {welcome.greetings} {welcome.title}
       </span>
@@ -143,8 +147,6 @@ function App() {
         onSearchInput={handleSearchInput}
         onSearchSubmit={handleSearchSubmit}
       />
-
-      <hr />
 
       {stories.isError && <p>Something went wrong ...</p>}
 

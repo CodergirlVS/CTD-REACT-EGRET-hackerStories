@@ -22,14 +22,18 @@ const Item = ({
   onRemoveStory,
 }) => {
   return (
-    <li key={objectID}>
-      <span>
+    <li className="item" key={objectID}>
+      <span style={{ width: "40%" }}>
         <a href={url}>{title}</a>
       </span>
-      <span>{author}</span>
-      <span>{num_comments}</span>
-      <span>{points}</span>
-      <button type="button" onClick={() => onRemoveStory(objectID)}>
+      <span style={{ width: "30%" }}>{author}</span>
+      <span style={{ width: "10%" }}>{num_comments}</span>
+      <span style={{ width: "10%" }}>{points}</span>
+      <button
+        type="button"
+        onClick={() => onRemoveStory(objectID)}
+        className="button buttonSmall"
+      >
         Remove
       </button>
     </li>
