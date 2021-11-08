@@ -17,50 +17,7 @@ function getTitle(title) {
 }
 
 const numbers = [1, 2, 3, 4];
-
-// const useSemiPersistentState = (key, initialState) => {
-//   const [value, setValue] = React.useState(
-//     localStorage.getItem(key) || initialState
-//   );
-//   React.useEffect(() => {
-//     localStorage.setItem(key, value);
-//   }, [value, key]);
-
-//   return [value, setValue];
-// };
-
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
-
-// const storiesReducer = (state, action) => {
-//   switch (action.type) {
-//     case "STORIES_FETCH_INIT":
-//       return {
-//         ...state,
-//         isLoading: true,
-//         isError: false,
-//       };
-//     case "STORIES_FETCH_SUCCESS":
-//       return {
-//         ...state,
-//         data: action.payload,
-//         isLoading: false,
-//         isError: false,
-//       };
-//     case "STORIES_FETCH_FAILURE":
-//       return {
-//         ...state,
-//         isLoading: false,
-//         isError: true,
-//       };
-//     case "REMOVE_STORY":
-//       return {
-//         ...state,
-//         data: state.date.filter((story) => action.payload !== story.objectID),
-//       };
-//     default:
-//       throw new Error();
-//   }
-// };
 
 class App extends React.Component {
   constructor(props) {
@@ -70,15 +27,28 @@ class App extends React.Component {
       searchTerm: "React",
       isLoading: false,
       isError: false,
-      data: [],
-      //url: `${API_ENDPOINT}${searchTerm}`,
+      stories: [],
+      url: `${API_ENDPOINT}${searchTerm}`,
     };
+  }
+
+  componentDidMount() {
+    handleFetchStories = () => {
+      this.setState({ isLoading: true });
+      try {
+        const result = axios.get(this.state.url);
+        this.setState({ isLoading: false });
+        this.setState({ stories: result.data.hit });
+      } catch {
+        this.setState({ isError: true });
+      }
+    }
   }
 
   handleRemoveStory = (objectID) => {
     return {
-      ...this.state.data,
-      this.state.date.filter((story) => action.payload !== story.objectID),
+      ...this.state,
+      this.setState({ stories: state.stories.filter((story) => this.state.stories.objectID !== story.objectID) }),
     };
   };
 
@@ -104,7 +74,7 @@ class App extends React.Component {
         {this.state.isLoading ? (
           <p>Loading ...</p>
         ) : (
-          <List list={this.state.data} onRemoveStory={this.handleRemoveStory} />
+          <List list={this.state.stories} onRemoveStory={this.handleRemoveStory} />
         )}
         <SearchForm
           searchTerm={searchTerm}
@@ -124,6 +94,48 @@ class App extends React.Component {
 }
 
 export default App;
+
+// const useSemiPersistentState = (key, initialState) => {
+//   const [value, setValue] = React.useState(
+//     localStorage.getItem(key) || initialState
+//   );
+//   React.useEffect(() => {
+//     localStorage.setItem(key, value);
+//   }, [value, key]);
+
+//   return [value, setValue];
+// };
+
+// const storiesReducer = (state, action) => {
+//   switch (action.type) {
+//     case "STORIES_FETCH_INIT":
+//       return {
+//         ...state,
+//         isLoading: true,
+//         isError: false,
+//       };
+//     case "STORIES_FETCH_SUCCESS":
+//       return {
+//         ...state,
+//         data: action.payload,
+//         isLoading: false,
+//         isError: false,
+//       };
+//     case "STORIES_FETCH_FAILURE":
+//       return {
+//         ...state,
+//         isLoading: false,
+//         isError: true,
+//       };
+//     case "REMOVE_STORY":
+//       return {
+//         ...state,
+//         data: state.data.filter((story) => action.payload !== story.objectID),
+//       };
+//     default:
+//       throw new Error();
+//   }
+// };
 
 // const [stories, dispatchStories] = React.useReducer(storiesReducer, {
 //   data: [],
