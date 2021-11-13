@@ -1,11 +1,12 @@
 //import logo from "./logo.svg";
-import "./App.css";
+import styles from "./App.module.css";
 //import { getByTitle } from "@testing-library/react";
 import List from "./List.js";
 import React from "react";
 //import Search from "./Search.js";
 import InputWithLabel from "./InputWithLabel";
 import axios from "axios";
+import styled from "styled-components";
 
 const welcome = {
   greetings: "Hi",
@@ -55,12 +56,25 @@ const storiesReducer = (state, action) => {
     case "REMOVE_STORY":
       return {
         ...state,
-        data: state.date.filter((story) => action.payload !== story.objectID),
+        data: state.data.filter((story) => action.payload !== story.objectID),
       };
     default:
       throw new Error();
   }
 };
+
+const StyledContainer = styled.div`
+  height: 100vw;
+  padding: 20px;
+  background: #83a4d4;
+  background: linear-gradient(to left, #b6fbff, #83a4d4);
+  color: #171212;
+`;
+const StyledHeadlinePrimary = styled.h1`
+  font-size: 48px;
+  font-weight: 300;
+  letter-spacing: 2px;
+`;
 
 function App() {
   const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "Re");
@@ -110,7 +124,7 @@ function App() {
   };
 
   const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
-    <form onSubmit={onSearchSubmit} className="search-form">
+    <form onSubmit={onSearchSubmit} className={styles.searchForm}>
       <InputWithLabel
         id="search"
         value={searchTerm}
@@ -123,7 +137,7 @@ function App() {
       <button
         type="submit"
         disabled={!searchTerm}
-        className="button buttonLarge"
+        className={`${styles.button} ${styles.buttonLarge}`}
       >
         Submit
       </button>
@@ -131,8 +145,8 @@ function App() {
   );
 
   return (
-    <div className="container">
-      <h1 className="headline-primary">My Hacker Stories</h1>
+    <StyledContainer>
+      <StyledHeadlinePrimary>My Hacker Stories</StyledHeadlinePrimary>
       <span>
         {welcome.greetings} {welcome.title}
       </span>
@@ -164,7 +178,7 @@ function App() {
           return <li> {number * 2}</li>;
         })}
       </ul>
-    </div>
+    </StyledContainer>
   );
 }
 
