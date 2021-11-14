@@ -2,17 +2,19 @@ import React from "react";
 import styled from "styled-components";
 import { ReactComponent as Check } from "./check.svg";
 
-const List = ({ list, onRemoveStory }) => {
+const List = React.memo(({ list, onRemoveStory }) => {
   return (
-    <ul>
-      {list.map(function (item) {
-        return (
-          <Item key={item.objectID} {...item} onRemoveStory={onRemoveStory} />
-        );
-      })}
-    </ul>
+    console.log("B:List") || (
+      <ul>
+        {list.map(function (item) {
+          return (
+            <Item key={item.objectID} {...item} onRemoveStory={onRemoveStory} />
+          );
+        })}
+      </ul>
+    )
   );
-};
+});
 
 const StyledItem = styled.li`
   display: flex;
