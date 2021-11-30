@@ -2,19 +2,46 @@ import React from "react";
 import styled from "styled-components";
 import { ReactComponent as Check } from "./check.svg";
 
-const List = React.memo(({ list, onRemoveStory }) => {
-  return (
-    console.log("B:List") || (
-      <ul>
-        {list.map(function (item) {
-          return (
-            <Item key={item.objectID} {...item} onRemoveStory={onRemoveStory} />
-          );
-        })}
-      </ul>
-    )
-  );
-});
+
+type Stories = Array<Story>;
+
+
+type ListProps = {
+  list: Stories;
+  onRemoveStory: (itemId: string) => void;
+}
+
+type Story = {
+objectID: string;
+url: string;
+title: string;
+author: string;
+num_comments: number;
+points: number;
+};
+
+type ItemProps = {
+item: Story;
+onRemoveStory: (itemId: string) => void;
+};
+
+
+
+
+const List = React.memo(({ list, onRemoveStory }: ListProps) => 
+    console.log('B:List') || (
+<ul>
+{list.map((item) => (
+<Item
+key={item.objectID}
+item={item}
+onRemoveStory={onRemoveStory}
+/>
+))}
+</ul>
+)
+);
+
 
 const StyledItem = styled.li`
   display: flex;
@@ -52,28 +79,19 @@ const StyledButtonSmall = styled(StyledButton)`
     color: #ffffff;
   }
 `;
-
-const Item = ({
-  objectID,
-  url,
-  title,
-  author,
-  num_comments,
-  points,
-  onRemoveStory,
-}) => {
+const Item = ({ item, onRemoveStory }: ItemProps ) => {
   return (
     <StyledItem>
       <StyledColumn width="40%">
-        <a href={url}>{title}</a>
+        <a href={item.url}>{item.title}</a>
       </StyledColumn>
-      <StyledColumn width="30%">{author}</StyledColumn>
-      <StyledColumn width="10%">{num_comments}</StyledColumn>
-      <StyledColumn width="10%">{points}</StyledColumn>
+      <StyledColumn width="30%">{item.author}</StyledColumn>
+      <StyledColumn width="10%">{item.num_comments}</StyledColumn>
+      <StyledColumn width="10%">{item.points}</StyledColumn>
       <StyledColumn width="10%">
         <StyledButtonSmall
           type="button"
-          onClick={() => onRemoveStory(objectID)}
+          onClick={() => onRemoveStory(item.objectID)}
         >
           <Check height="18px" width="18px" />
         </StyledButtonSmall>
