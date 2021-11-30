@@ -1,7 +1,7 @@
 //import logo from "./logo.svg";
 import styles from "./App.module.css";
 //import { getByTitle } from "@testing-library/react";
-import List from "./List.js";
+import List from "./List";
 import React from "react";
 //import Search from "./Search.js";
 import InputWithLabel from "./InputWithLabel";
@@ -13,26 +13,64 @@ const welcome = {
   title: "React",
 };
 
-function getTitle(title) {
+function getTitle(title: string) {
   return title;
 }
 
 const numbers = [1, 2, 3, 4];
 
-const useSemiPersistentState = (key, initialState) => {
+const useSemiPersistentState = (key : string, initialState: string): [string, (newValue: string) => void] => {
+  const isMounted = React.useRef(false);
   const [value, setValue] = React.useState(
     localStorage.getItem(key) || initialState
   );
   React.useEffect(() => {
-    localStorage.setItem(key, value);
+    if (!isMounted.current) {
+      isMounted.current = true;
+    } else {
+      console.log("A");
+      localStorage.setItem(key, value);
+    }
   }, [value, key]);
 
   return [value, setValue];
 };
 
+type Stories = array;
+
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 
-const storiesReducer = (state, action) => {
+type StoriesState = {
+  data: Stories;
+  isLoading: boolean;
+  isError: boolean;
+};
+
+interface StoriesFetchInitAction {
+  type: "STORIES_FETCH_INIT"
+}
+
+interface StoriesFetchSuccessAction {
+type: "STORIES_FETCH_SUCCESS";
+payload: Stories;
+}
+
+interface StoriesFetchFailureAction {
+  type: "STORIES_FETCH_FAILURE"
+}
+
+interface StoriesRemoveAction {
+  type: 'REMOVE_STORY';
+  payload: Story;
+}
+
+type StoriesAction =
+| StoriesFetchInitAction
+| StoriesFetchSuccessAction
+| StoriesFetchFailureAction
+| StoriesRemoveAction;
+
+const storiesReducer = (state: StoriesState, action: StoriesAction) => {
   switch (action.type) {
     case "STORIES_FETCH_INIT":
       return {
@@ -76,6 +114,12 @@ const StyledHeadlinePrimary = styled.h1`
   letter-spacing: 2px;
 `;
 
+const getSumComments = (stories) => {
+  console.log("C");
+
+  return stories.data.reduce((result, value) => result + value.num_comments, 0);
+};
+
 function App() {
   const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "Re");
 
@@ -86,11 +130,11 @@ function App() {
   });
   const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
 
-  const handleSearchInput = (event) => {
+  const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
-  const handleSearchSubmit = (event) => {
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     setUrl(`${API_ENDPOINT}${searchTerm}`);
     event.preventDefault();
   };
@@ -116,14 +160,21 @@ function App() {
     handleFetchStories();
   }, [handleFetchStories]);
 
-  const handleRemoveStory = (objectID) => {
+  const handleRemoveStory = React.useCallback((objectID) => {
     dispatchStories({
       type: "REMOVE_STORY",
       payload: objectID,
     });
+  }, []);
+
+  type SearchFormProps = {
+    searchTerm: string;
+    onSearchInput: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onSearchSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   };
 
-  const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
+  const SearchForm = ({
+    searchTerm, onSearchInput, onSearchSubmit }: SearchFormProps) => (
     <form onSubmit={onSearchSubmit} className={styles.searchForm}>
       <InputWithLabel
         id="search"
@@ -144,9 +195,15 @@ function App() {
     </form>
   );
 
+  console.log("B.App");
+
+  const sumComments = React.useMemo(() => getSumComments(stories), [stories]);
+
   return (
     <StyledContainer>
-      <StyledHeadlinePrimary>My Hacker Stories</StyledHeadlinePrimary>
+      <StyledHeadlinePrimary>
+        My Hacker Stories with {sumComments} comments
+      </StyledHeadlinePrimary>
       <span>
         {welcome.greetings} {welcome.title}
       </span>
