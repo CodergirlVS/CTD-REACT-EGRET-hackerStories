@@ -1,9 +1,9 @@
 //import logo from "./logo.svg";
+import React from "react";
+//import Search from "./Search.js";
 import styles from "./App.module.css";
 //import { getByTitle } from "@testing-library/react";
 import List from "./List.js";
-import React from "react";
-//import Search from "./Search.js";
 import InputWithLabel from "./InputWithLabel";
 import axios from "axios";
 import styled from "styled-components";
@@ -135,27 +135,6 @@ function App() {
     });
   }, []);
 
-  const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
-    <form onSubmit={onSearchSubmit} className={styles.searchForm}>
-      <InputWithLabel
-        id="search"
-        value={searchTerm}
-        onInputChange={onSearchInput}
-        isFocused
-      >
-        <strong>Find It:</strong>
-      </InputWithLabel>
-
-      <button
-        type="submit"
-        disabled={!searchTerm}
-        className={`${styles.button} ${styles.buttonLarge}`}
-      >
-        Submit
-      </button>
-    </form>
-  );
-
   console.log("B.App");
 
   const sumComments = React.useMemo(() => getSumComments(stories), [stories]);
@@ -193,11 +172,33 @@ function App() {
       <hr />
       <ul>
         {numbers.map(function (number) {
-          return <li> {number * 2}</li>;
+          return <li key={number}> {number * 2}</li>;
         })}
       </ul>
     </StyledContainer>
   );
 }
 
+const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
+  <form onSubmit={onSearchSubmit} className={styles.searchForm}>
+    <InputWithLabel
+      id="search"
+      value={searchTerm}
+      onInputChange={onSearchInput}
+      isFocused
+    >
+      <strong>Find It:</strong>
+    </InputWithLabel>
+
+    <button
+      type="submit"
+      disabled={!searchTerm}
+      className={`${styles.button} ${styles.buttonLarge}`}
+    >
+      Submit
+    </button>
+  </form>
+);
+
 export default App;
+export { storiesReducer, SearchForm, InputWithLabel };
