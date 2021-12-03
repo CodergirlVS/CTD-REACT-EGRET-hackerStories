@@ -1,9 +1,9 @@
 //import logo from "./logo.svg";
+import React from "react";
+//import Search from "./Search.js";
 import styles from "./App.module.css";
 //import { getByTitle } from "@testing-library/react";
 import List from "./List.js";
-import React from "react";
-//import Search from "./Search.js";
 import InputWithLabel from "./InputWithLabel";
 import axios from "axios";
 import styled from "styled-components";
@@ -20,11 +20,17 @@ function getTitle(title) {
 const numbers = [1, 2, 3, 4];
 
 const useSemiPersistentState = (key, initialState) => {
+  const isMounted = React.useRef(false);
   const [value, setValue] = React.useState(
     localStorage.getItem(key) || initialState
   );
   React.useEffect(() => {
-    localStorage.setItem(key, value);
+    if (!isMounted.current) {
+      isMounted.current = true;
+    } else {
+      console.log("A");
+      localStorage.setItem(key, value);
+    }
   }, [value, key]);
 
   return [value, setValue];
@@ -76,6 +82,12 @@ const StyledHeadlinePrimary = styled.h1`
   letter-spacing: 2px;
 `;
 
+const getSumComments = (stories) => {
+  console.log("C");
+
+  return stories.data.reduce((result, value) => result + value.num_comments, 0);
+};
+
 function App() {
   const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "Re");
 
@@ -116,37 +128,22 @@ function App() {
     handleFetchStories();
   }, [handleFetchStories]);
 
-  const handleRemoveStory = (objectID) => {
+  const handleRemoveStory = React.useCallback((objectID) => {
     dispatchStories({
       type: "REMOVE_STORY",
       payload: objectID,
     });
-  };
+  }, []);
 
-  const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
-    <form onSubmit={onSearchSubmit} className={styles.searchForm}>
-      <InputWithLabel
-        id="search"
-        value={searchTerm}
-        onInputChange={onSearchInput}
-        isFocused
-      >
-        <strong>Find It:</strong>
-      </InputWithLabel>
+  console.log("B.App");
 
-      <button
-        type="submit"
-        disabled={!searchTerm}
-        className={`${styles.button} ${styles.buttonLarge}`}
-      >
-        Submit
-      </button>
-    </form>
-  );
+  const sumComments = React.useMemo(() => getSumComments(stories), [stories]);
 
   return (
     <StyledContainer>
-      <StyledHeadlinePrimary>My Hacker Stories</StyledHeadlinePrimary>
+      <StyledHeadlinePrimary>
+        My Hacker Stories with {sumComments} comments
+      </StyledHeadlinePrimary>
       <span>
         {welcome.greetings} {welcome.title}
       </span>
@@ -175,11 +172,33 @@ function App() {
       <hr />
       <ul>
         {numbers.map(function (number) {
-          return <li> {number * 2}</li>;
+          return <li key={number}> {number * 2}</li>;
         })}
       </ul>
     </StyledContainer>
   );
 }
 
+const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
+  <form onSubmit={onSearchSubmit} className={styles.searchForm}>
+    <InputWithLabel
+      id="search"
+      value={searchTerm}
+      onInputChange={onSearchInput}
+      isFocused
+    >
+      <strong>Find It:</strong>
+    </InputWithLabel>
+
+    <button
+      type="submit"
+      disabled={!searchTerm}
+      className={`${styles.button} ${styles.buttonLarge}`}
+    >
+      Submit
+    </button>
+  </form>
+);
+
 export default App;
+export { storiesReducer, SearchForm, InputWithLabel };
