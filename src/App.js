@@ -17,7 +17,28 @@ function getTitle(title) {
   return title;
 }
 
-const numbers = [1, 2, 3, 4];
+// const numbers = [1, 2, 3, 4];
+
+const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
+  <form onSubmit={onSearchSubmit} className={styles.searchForm}>
+    <InputWithLabel
+      id="search"
+      value={searchTerm}
+      onInputChange={onSearchInput}
+      isFocused
+    >
+      <strong>Find It:</strong>
+    </InputWithLabel>
+
+    <button
+      type="submit"
+      disabled={!searchTerm}
+      className={`${styles.button} ${styles.buttonLarge}`}
+    >
+      Submit
+    </button>
+  </form>
+);
 
 const useSemiPersistentState = (key, initialState) => {
   const isMounted = React.useRef(false);
@@ -35,8 +56,6 @@ const useSemiPersistentState = (key, initialState) => {
 
   return [value, setValue];
 };
-
-const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 
 const storiesReducer = (state, action) => {
   switch (action.type) {
@@ -88,24 +107,67 @@ const getSumComments = (stories) => {
   return stories.data.reduce((result, value) => result + value.num_comments, 0);
 };
 
+const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
+
+const getUrl = (searchTerm) => `${API_ENDPOINT}${searchTerm}`;
+
+const extractSearchTerm = (url) => url.replace(API_ENDPOINT, "");
+
+const getLastSearches = (urls) => {
+  urls
+    .reduce((result, url, index) => {
+      const searchTerm = extractSearchTerm(url);
+
+      if (index === 0) {
+        return result.concat(searchTerm);
+      }
+
+      const previousSearchTerm = result[result.length - 1];
+
+      if (searchTerm === previousSearchTerm) {
+        return result;
+      } else {
+        return result.concat(searchTerm);
+      }
+    }, [])
+    .slice(-6)
+    .slice(0, -1);
+};
+
 function App() {
-  const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "Re");
+  const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "React");
 
   const [stories, dispatchStories] = React.useReducer(storiesReducer, {
     data: [],
     isLoading: false,
     isError: false,
   });
-  const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
+  const [urls, setUrls] = React.useState([getUrl(searchTerm)]);
 
   const handleSearchInput = (event) => {
     setSearchTerm(event.target.value);
   };
 
+  const handleSearch = (searchTerm) => {
+    const url = getUrl(searchTerm);
+    setUrls(urls.concat(url));
+  };
+
   const handleSearchSubmit = (event) => {
-    setUrl(`${API_ENDPOINT}${searchTerm}`);
+    handleSearch(searchTerm);
+
     event.preventDefault();
   };
+
+  const handleLastSearch = (searchTerm) => {
+    setSearchTerm(searchTerm);
+
+    handleSearch(searchTerm);
+  };
+
+  const lastSearches = getLastSearches(urls);
+
+  console.log(lastSearches);
 
   const handleFetchStories = React.useCallback(async () => {
     dispatchStories({
@@ -113,7 +175,8 @@ function App() {
     });
 
     try {
-      const result = await axios.get(url);
+      const lastUrl = urls[urls.length - 1];
+      const result = await axios.get(lastUrl);
 
       dispatchStories({
         type: "STORIES_FETCH_SUCCESS",
@@ -122,7 +185,7 @@ function App() {
     } catch {
       dispatchStories({ type: "STORIES_FETCH_FAILURE" });
     }
-  }, [url]);
+  }, [urls]);
 
   React.useEffect(() => {
     handleFetchStories();
@@ -158,6 +221,14 @@ function App() {
         onSearchInput={handleSearchInput}
         onSearchSubmit={handleSearchSubmit}
       />
+      <p>
+        Searching for <strong>{searchTerm}</strong>
+      </p>
+
+      <LastSearches
+        lastSearches={lastSearches}
+        onLastSearch={handleLastSearch}
+      />
 
       {stories.isError && <p>Something went wrong ...</p>}
 
@@ -166,38 +237,28 @@ function App() {
       ) : (
         <List list={stories.data} onRemoveStory={handleRemoveStory} />
       )}
-      <p>
-        Searching for <strong>{searchTerm}</strong>.
-      </p>
+
       <hr />
-      <ul>
+      {/* <ul>
         {numbers.map(function (number) {
           return <li key={number}> {number * 2}</li>;
         })}
-      </ul>
+      </ul> */}
     </StyledContainer>
   );
 }
-
-const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
-  <form onSubmit={onSearchSubmit} className={styles.searchForm}>
-    <InputWithLabel
-      id="search"
-      value={searchTerm}
-      onInputChange={onSearchInput}
-      isFocused
-    >
-      <strong>Find It:</strong>
-    </InputWithLabel>
-
-    <button
-      type="submit"
-      disabled={!searchTerm}
-      className={`${styles.button} ${styles.buttonLarge}`}
-    >
-      Submit
-    </button>
-  </form>
+const LastSearches = ({ lastSearches, onLastSearch }) => (
+  <>
+    {lastSearches.map((searchTerm, index) => (
+      <button
+        key={searchTerm + index}
+        type="button"
+        onClick={() => onLastSearch(searchTerm)}
+      >
+        {searchTerm}
+      </button>
+    ))}
+  </>
 );
 
 export default App;
