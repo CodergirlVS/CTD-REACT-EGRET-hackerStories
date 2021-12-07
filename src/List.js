@@ -1,12 +1,61 @@
 import React from "react";
 import styled from "styled-components";
 import { ReactComponent as Check } from "./check.svg";
+import { sortBy } from "lodash";
+
+const SORTS = {
+  NONE: (list) => list,
+  TITLE: (list) => sortBy(list, "title"),
+  AUTHOR: (list) => sortBy(list, "author"),
+  COMMENT: (list) => sortBy(list, "num_comments").reverse(),
+  POINT: (list) => sortBy(list, "points").reverse(),
+};
 
 const List = React.memo(({ list, onRemoveStory }) => {
+  const [sort, setSort] = React.useState("NONE");
+  const [isReverse, setIsReverse] = React.useState(false);
+
+  const handleSort = (sortKey) => {
+    setIsReverse(!isReverse && sort === sortKey);
+    setSort(sortKey);
+  };
+  console.log(sort);
+  console.log(isReverse);
+
+  const sortFunction = SORTS[sort];
+  const sortedList = isReverse
+    ? sortFunction(list).reverse()
+    : sortFunction(list);
+  console.log("Title is desc sort");
+
   return (
     console.log("B:List") || (
       <ul>
-        {list.map(function (item) {
+        <li style={{ display: "flex" }}>
+          <span style={{ width: "40%" }}>
+            <button type="button" onClick={() => handleSort("TITLE")}>
+              Title
+            </button>
+          </span>
+          <span style={{ width: "30%" }}>
+            <button type="button" onClick={() => handleSort("AUTHOR")}>
+              Author
+            </button>
+          </span>
+          <span style={{ width: "10%" }}>
+            <button type="button" onClick={() => handleSort("COMMENT")}>
+              Comments
+            </button>
+          </span>
+          <span style={{ width: "10%" }}>
+            <button type="button" onClick={() => handleSort("POINT")}>
+              Points
+            </button>
+          </span>
+          <span style={{ width: "10%" }}>Actions</span>
+        </li>
+
+        {sortedList.map(function (item) {
           return (
             <Item
               key={item.objectID}
